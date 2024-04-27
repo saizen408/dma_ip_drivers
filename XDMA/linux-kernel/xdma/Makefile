@@ -19,6 +19,9 @@ $(warning XVC_FLAGS: $(XVC_FLAGS).)
 topdir := $(shell cd $(src)/.. && pwd)
 
 TARGET_MODULE:=xdma
+K_DIR	= /lib/modules/$(shell uname -r)
+K_BUILD_DIR := $(K_DIR)/build
+KERNEL_SRC := ${K_BUILD_DIR}
 
 EXTRA_CFLAGS := -I$(topdir)/include $(XVC_FLAGS)
 ifeq ($(DEBUG),1)
@@ -36,11 +39,14 @@ else
 	BUILDSYSTEM_DIR:=/lib/modules/$(shell uname -r)/build
 	PWD:=$(shell pwd)
 all :
-	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) modules
+	$(MAKE) -C $(KERNEL_SRC) M=$(PWD) modules
 
 clean:
-	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) clean
+	$(MAKE) -C $(KERNEL_SRC) M=$(PWD) clean
 	@/bin/rm -f *.ko modules.order *.mod.c *.o *.o.ur-safe .*.o.cmd
+
+modules_install:
+	$(MAKE) -C $(KERNEL_SRC) M=$(PWD) modules_install
 
 install: all
 	@rm -f /lib/modules/5.15.0-67-generic/extra/xdma.ko
